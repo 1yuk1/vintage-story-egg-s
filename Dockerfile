@@ -1,17 +1,30 @@
-FROM mcr.microsoft.com/dotnet/aspnet:10.0
+FROM debian:bookworm-slim
 
-LABEL org.opencontainers.image.source="https://github.com/CHANGE_ME/vintagestory-pterodactyl"
+LABEL org.opencontainers.image.source="https://github.com/1yuk1/vintage-story-egg-s"
 LABEL org.opencontainers.image.description="Vintage Story dedicated server for Pterodactyl (x64, .NET 10)"
 
-# Pterodactyl/Wings требования: пользователь container (UID/GID 988), домашняя директория /home/container
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        bash curl ca-certificates && \
-    rm -rf /var/lib/apt/lists/* && \
-    groupadd -r container -g 988 && \
-    useradd -u 988 -r -g container -m -d /home/container -s /bin/bash container
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Official yolks do not pin UID/GID. Wings injects the host pterodactyl user at runtime.
+RUN useradd -m -d /home/container -s /bin/bash container
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        bash ca-certificates curl iproute2 tini wget \
+        libgdiplus libicu72 \
+    && rm -rf /var/lib/apt/lists/* \
+    && wget -q https://dot.net/v1/dotnet-install.sh \
+    && chmod +x dotnet-install.sh \
+    && ./dotnet-install.sh --channel 10.0 --runtime aspnetcore --install-dir /usr/share/dotnet \
+    && ln -sf /usr/share/dotnet/dotnet /usr/bin/dotnet \
+    && rm -f dotnet-install.sh
 
 USER container
-ENV HOME=/home/container
+ENV USER=container HOME=/home/container DOTNET_ROOT=/usr/share/dotnet
 WORKDIR /home/container
 
-CMD ["/bin/bash"]
+STOPSIGNAL SIGINT
+
+COPY --chown=container:container entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/usr/bin/tini", "-g", "--"]
+CMD ["/bin/bash", "/entrypoint.sh"]
