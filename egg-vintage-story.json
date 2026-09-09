@@ -1,0 +1,72 @@
+{
+  "_comment": "Vintage Story dedicated server (custom egg, x64, .NET 10)",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": null
+  },
+  "exported_at": "2026-09-09T17:11:00+03:00",
+  "name": "Vintage Story",
+  "author": "CHANGE_ME",
+  "description": "Vintage Story dedicated server 1.22.x (x64). Downloads server files from official CDN, requires custom image ghcr.io/CHANGE_ME/vintagestory-pterodactyl.",
+  "features": [],
+  "docker_images": {
+    "Dotnet 10 (GHCR)": "ghcr.io/CHANGE_ME/vintagestory-pterodactyl:latest"
+  },
+  "file_denylist": [],
+  "startup": "./VintagestoryServer --dataPath ./data --port={{SERVER_PORT}} --maxclients={{MAX_CLIENTS}} {{OPTIONS}}",
+  "config": {
+    "files": "{}",
+    "startup": "{\"done\": \"Dedicated Server now running on Port \"}",
+    "logs": "{}",
+    "stop": "/stop"
+  },
+  "scripts": {
+    "installation": {
+      "script": "#!/bin/bash\n# Vintage Story dedicated server installer\n# Server files: /mnt/server\nset -e\n\napt update\napt -y install curl ca-certificates\n\nVERSION=\"${VS_VERSION:-1.22.7}\"\nURL=\"https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-x64_${VERSION}.tar.gz\"\n\ncd /mnt/server || exit 1\n\necho \"Downloading Vintage Story server ${VERSION}\"\necho \"URL: ${URL}\"\ncurl -fSL -o vs_server.tar.gz \"${URL}\"\n\n# Чистим файлы старой версии, чтобы не осталось устаревших ассетов\nif [ -d \"assets\" ]; then\n    echo \"Removing old installation files\"\n    rm -rf assets/ Lib/\nfi\n\ntar -xzf vs_server.tar.gz\nrm -f vs_server.tar.gz server.sh\n\nmkdir -p data\nchmod +x VintagestoryServer || true\n\necho \"Installation completed\"\n",
+      "container": "ghcr.io/ptero-eggs/installers:debian",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Server Port",
+      "description": "Port the server listens on (UDP+TCP)",
+      "env_variable": "SERVER_PORT",
+      "default_value": "42420",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer",
+      "field_type": "text"
+    },
+    {
+      "name": "Server version",
+      "description": "Exact stable version, e.g. 1.22.7",
+      "env_variable": "VS_VERSION",
+      "default_value": "1.22.7",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:20",
+      "field_type": "text"
+    },
+    {
+      "name": "Max Clients",
+      "description": "Maximum players",
+      "env_variable": "MAX_CLIENTS",
+      "default_value": "16",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|max:256",
+      "field_type": "text"
+    },
+    {
+      "name": "Start options",
+      "description": "Extra CLI options passed to the server",
+      "env_variable": "OPTIONS",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "nullable|string|max:200",
+      "field_type": "text"
+    }
+  ]
+}
