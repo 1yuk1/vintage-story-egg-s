@@ -6,17 +6,17 @@
   },
   "exported_at": "2026-09-09T17:11:00+03:00",
   "name": "Vintage Story",
-  "author": "CHANGE_ME",
-  "description": "Vintage Story dedicated server 1.22.x (x64). Downloads server files from official CDN, requires custom image ghcr.io/CHANGE_ME/vintagestory-pterodactyl.",
-  "features": [],
+  "author": "1yuk1@users.noreply.github.com",
+  "description": "Vintage Story dedicated server 1.22.x (x64). Downloads server files from official CDN, requires custom image ghcr.io/1yuk1/vintage-story-egg-s.",
+  "features": null,
   "docker_images": {
-    "Dotnet 10 (GHCR)": "ghcr.io/CHANGE_ME/vintagestory-pterodactyl:latest"
+    "Dotnet 10 (GHCR)": "ghcr.io/1yuk1/vintage-story-egg-s:latest"
   },
   "file_denylist": [],
   "startup": "./VintagestoryServer --dataPath ./data --port={{SERVER_PORT}} --maxclients={{MAX_CLIENTS}} {{OPTIONS}}",
   "config": {
     "files": "{}",
-    "startup": "{\"done\": \"Dedicated Server now running on Port \"}",
+    "startup": "{\r\n    \"done\": \"Dedicated Server now running on Port \"\r\n}",
     "logs": "{}",
     "stop": "/stop"
   },
@@ -28,16 +28,6 @@
     }
   },
   "variables": [
-    {
-      "name": "Server Port",
-      "description": "Port the server listens on (UDP+TCP)",
-      "env_variable": "SERVER_PORT",
-      "default_value": "42420",
-      "user_viewable": true,
-      "user_editable": true,
-      "rules": "required|integer",
-      "field_type": "text"
-    },
     {
       "name": "Server version",
       "description": "Exact stable version, e.g. 1.22.7",
